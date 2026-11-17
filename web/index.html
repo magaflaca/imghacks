@@ -94,37 +94,39 @@
           </div>
         </form>
       </section>
-
-      <section class="card px api" id="api" aria-label="API">
-        <details>
-          <summary><span data-icon="code"></span> api para desarrolladores</summary>
-          <p>
-            La API es asincrona y funciona con API key. Creas una generacion, recibes un <code>id</code> y consultas su estado hasta
-            que termina. Las claves las entrega quien administra el servicio.
-          </p>
-          <div class="code px">
-            <button class="icon-btn" type="button" id="copy-example" aria-label="Copiar ejemplo" data-icon="copy"></button>
-            <pre id="example"></pre>
-          </div>
-          <dl class="endpoints">
-            <div><dt>GET /v1/models</dt><dd>modelos, formatos y estilos disponibles</dd></div>
-            <div><dt>POST /v1/generations</dt><dd>crea una generacion: model, prompt, n, aspect, images, style, negative, nsfw</dd></div>
-            <div><dt>GET /v1/generations/:id</dt><dd>estado e imagenes de la generacion</dd></div>
-            <div><dt>POST /v1/images/generations</dt><dd>compatible con el formato de OpenAI, responde al terminar</dd></div>
-          </dl>
-        </details>
-      </section>
       </div>
 
-      <section class="results" aria-label="Tus imagenes">
-        <div class="results-head">
-          <h2>tus imagenes</h2>
-          <button class="ghost px" id="clear" type="button" hidden>borrar todas</button>
-          <p class="hint">se guardan en este dispositivo, nadie mas las ve. puedes borrarlas cuando quieras.</p>
-        </div>
-        <div class="gallery" id="gallery"></div>
-        <p class="empty" id="empty">aun no hay nada por aqui. escribe algo y pulsa generar.</p>
-      </section>
+      <div class="feed">
+        <section class="results" aria-label="Tus imagenes">
+          <div class="results-head">
+            <h2>tus imagenes</h2>
+            <button class="ghost px" id="clear" type="button" hidden>borrar todas</button>
+            <p class="hint">se guardan en este dispositivo, nadie mas las ve. puedes borrarlas cuando quieras.</p>
+          </div>
+          <div class="gallery" id="gallery"></div>
+          <p class="empty" id="empty">aun no hay nada por aqui. escribe algo y pulsa generar.</p>
+        </section>
+
+        <section class="card px api" id="api" aria-label="API">
+          <details>
+            <summary><span data-icon="code"></span> api para desarrolladores</summary>
+            <p>
+              La API es asincrona y funciona con API key. Creas una generacion, recibes un <code>id</code> y consultas su estado
+              hasta que termina. Las claves las entrega quien administra el servicio.
+            </p>
+            <div class="code px">
+              <button class="icon-btn" type="button" id="copy-example" aria-label="Copiar ejemplo" data-icon="copy"></button>
+              <pre id="example"></pre>
+            </div>
+            <dl class="endpoints">
+              <div><dt>GET /v1/models</dt><dd>modelos, formatos y estilos disponibles</dd></div>
+              <div><dt>POST /v1/generations</dt><dd>crea una generacion: model, prompt, n, aspect, images, style, negative, nsfw</dd></div>
+              <div><dt>GET /v1/generations/:id</dt><dd>estado e imagenes de la generacion</dd></div>
+              <div><dt>POST /v1/images/generations</dt><dd>compatible con el formato de OpenAI, responde al terminar</dd></div>
+            </dl>
+          </details>
+        </section>
+      </div>
     </main>
 
     <footer class="foot">haz lo que quieras, con amor.</footer>

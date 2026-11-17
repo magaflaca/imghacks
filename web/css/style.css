@@ -206,16 +206,9 @@ main {
   padding: 58px 0 40px;
 }
 
-.side {
+.side,
+.feed {
   display: contents;
-}
-
-.results {
-  order: 1;
-}
-
-.api {
-  order: 2;
 }
 
 .card {
@@ -851,9 +844,29 @@ code {
 
 .code pre {
   margin: 0;
-  padding: 14px;
-  overflow-x: auto;
+  padding: 42px 14px 14px;
   line-height: 1.55;
+  overflow-x: auto;
+}
+
+.code pre::-webkit-scrollbar {
+  height: 9px;
+}
+
+.code pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code pre::-webkit-scrollbar-thumb {
+  background: var(--ink-soft);
+  border: 3px solid var(--bg);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .code pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-soft) transparent;
+  }
 }
 
 .code .icon-btn {
@@ -975,10 +988,12 @@ dialog[open] {
     gap: 0 48px;
   }
 
-  .side {
+  .side,
+  .feed {
     display: flex;
     flex-direction: column;
-    gap: 36px;
+    gap: 44px;
+    min-width: 0;
   }
 
   .options {
@@ -1010,6 +1025,11 @@ dialog[open] {
 @media (max-width: 560px) {
   body {
     font-size: 16px;
+  }
+
+  code,
+  pre {
+    font-size: 12px;
   }
 
   .top {

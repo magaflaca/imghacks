@@ -1,1 +1,144 @@
-<!doctype html><title>imghacks</title>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>imghacks</title>
+    <meta name="description" content="Generador de imagenes abierto. Escribe lo que imaginas, elige un modelo y listo." />
+    <meta name="theme-color" content="#fdf6ee" />
+    <link rel="icon" href="data:," id="favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script>
+      document.documentElement.dataset.theme =
+        JSON.parse(localStorage.getItem('imghacks:theme') ?? 'null') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    </script>
+  </head>
+  <body>
+    <canvas id="scene" aria-hidden="true"></canvas>
+
+    <header class="top">
+      <a class="brand" href="/" aria-label="imghacks">img<b>hacks</b></a>
+      <nav class="top-actions">
+        <a class="icon-btn px" href="#api" aria-label="Ver la API" data-icon="code"></a>
+        <button class="icon-btn px" id="sound-toggle" type="button" aria-label="Sonido"></button>
+        <button class="icon-btn px" id="theme-toggle" type="button" aria-label="Cambiar tema"></button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="composer card px" aria-label="Crear imagenes">
+        <div class="perch">
+          <p class="bubble px" id="bubble" role="status" aria-live="polite" hidden></p>
+          <canvas class="mascot" id="mascot" width="16" height="13" role="img" aria-label="Mascota"></canvas>
+        </div>
+
+        <form id="composer" novalidate>
+          <label class="label" for="prompt">que quieres ver</label>
+          <textarea
+            class="input px"
+            id="prompt"
+            rows="3"
+            maxlength="2000"
+            placeholder="un jardin flotante al amanecer, acuarela suave"
+            required
+          ></textarea>
+
+          <fieldset class="field">
+            <legend class="label">modelo</legend>
+            <div class="options options-models" id="models" role="radiogroup" aria-label="Modelo"></div>
+          </fieldset>
+
+          <div class="field-row">
+            <fieldset class="field">
+              <legend class="label">formato</legend>
+              <div class="options" id="aspects" role="radiogroup" aria-label="Formato"></div>
+            </fieldset>
+            <fieldset class="field">
+              <legend class="label">cantidad</legend>
+              <div class="stepper px">
+                <button type="button" id="less" aria-label="Menos" data-icon="minus"></button>
+                <output id="count" aria-live="polite">1</output>
+                <button type="button" id="more" aria-label="Mas" data-icon="plus"></button>
+              </div>
+            </fieldset>
+          </div>
+
+          <fieldset class="field" id="style-field" hidden>
+            <legend class="label">estilo</legend>
+            <div class="options" id="styles" role="radiogroup" aria-label="Estilo"></div>
+          </fieldset>
+
+          <div class="actions">
+            <label class="switch">
+              <input type="checkbox" id="adult" />
+              <span class="switch-track px"><span class="switch-knob"></span></span>
+              <span class="switch-text">+18</span>
+            </label>
+            <button class="primary px" id="submit" type="submit">
+              <span data-icon="sparkle"></span>
+              <span>generar</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="results" aria-label="Tus imagenes">
+        <div class="results-head">
+          <h2>tus imagenes</h2>
+          <p class="hint">se borran solas a los 30 minutos. guarda las que te gusten.</p>
+        </div>
+        <div class="gallery" id="gallery"></div>
+        <p class="empty" id="empty">aun no hay nada por aqui. escribe algo arriba y pulsa generar.</p>
+      </section>
+
+      <section class="card px api" id="api" aria-label="API">
+        <details>
+          <summary><span data-icon="code"></span> api para desarrolladores</summary>
+          <p>
+            La API es asincrona y funciona con API key. Creas una generacion, recibes un <code>id</code> y consultas su estado hasta
+            que termina. Las claves las entrega quien administra el servicio.
+          </p>
+          <div class="code px">
+            <button class="icon-btn" type="button" id="copy-example" aria-label="Copiar ejemplo" data-icon="copy"></button>
+            <pre id="example"></pre>
+          </div>
+          <dl class="endpoints">
+            <div><dt>GET /v1/models</dt><dd>modelos, formatos y estilos disponibles</dd></div>
+            <div><dt>POST /v1/generations</dt><dd>crea una generacion: model, prompt, n, aspect, style, negative, nsfw</dd></div>
+            <div><dt>GET /v1/generations/:id</dt><dd>estado e imagenes de la generacion</dd></div>
+            <div><dt>POST /v1/images/generations</dt><dd>compatible con el formato de OpenAI, responde al terminar</dd></div>
+          </dl>
+        </details>
+      </section>
+    </main>
+
+    <footer class="foot">hecho con calma, pixel a pixel</footer>
+
+    <dialog class="lightbox" id="lightbox" aria-label="Imagen ampliada">
+      <div class="lightbox-frame px">
+        <img id="lightbox-image" alt="" />
+        <div class="lightbox-bar">
+          <p id="lightbox-prompt"></p>
+          <a class="icon-btn px" id="lightbox-download" download aria-label="Descargar" data-icon="download"></a>
+          <button class="icon-btn px" id="lightbox-close" type="button" aria-label="Cerrar" data-icon="close"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="gate" id="gate" aria-labelledby="gate-title">
+      <form method="dialog" class="gate-frame card px">
+        <h2 id="gate-title">contenido para adultos</h2>
+        <p>El modo +18 usa el modelo hacks, que no filtra contenido. Confirma que eres mayor de edad para activarlo.</p>
+        <div class="gate-actions">
+          <button class="ghost px" value="no">volver</button>
+          <button class="primary px" value="yes">tengo 18 o mas</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/js/main.js"></script>
+  </body>
+</html>

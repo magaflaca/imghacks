@@ -1,25 +1,30 @@
 import { api } from './api.js';
+import { library } from './library.js';
 import { icon } from './pixels.js';
 import { session } from './store.js';
 
 const POLL_MS = 1800;
 const FINAL = new Set(['done', 'failed']);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const fileName = (url) => `imghacks-${url.split('/').pop()}`;
+const idOf = (url) => url.split('/').pop();
+const fileName = (id) => `imghacks-${id}`;
 
-export function createGallery({ root, empty, lightbox, onEvent }) {
+export function createGallery({ root, empty, clearButton, lightbox, onEvent }) {
   const frame = { image: lightbox.querySelector('img'), prompt: lightbox.querySelector('p'), save: lightbox.querySelector('[download]') };
   const tracked = new Set(session.get('jobs', []));
 
-  const remember = () => session.set('jobs', [...tracked].slice(-24));
-  const refreshEmpty = () => (empty.hidden = root.childElementCount > 0);
+  const remember = () => session.set('jobs', [...tracked]);
+  const refreshEmpty = () => {
+    empty.hidden = root.childElementCount > 0;
+    clearButton.hidden = !root.querySelector('.tile:not(.is-loading)');
+  };
 
-  function open(url, prompt) {
-    frame.image.src = url;
+  function open({ id, src, prompt }) {
+    frame.image.src = src;
     frame.image.alt = prompt;
     frame.prompt.textContent = prompt;
-    frame.save.href = url;
-    frame.save.download = fileName(url);
+    frame.save.href = src;
+    frame.save.download = fileName(id);
     lightbox.showModal();
     onEvent('open');
   }
@@ -34,51 +39,71 @@ export function createGallery({ root, empty, lightbox, onEvent }) {
     return tile;
   }
 
-  function reveal(tile, { url }, prompt) {
+  function action(tag, kind, label, glyph) {
+    const control = document.createElement(tag);
+    control.className = `tile-action tile-${kind} icon-btn px`;
+    control.setAttribute('aria-label', label);
+    control.append(icon(glyph));
+    return control;
+  }
+
+  function reveal(tile, item) {
     const view = document.createElement('button');
     view.type = 'button';
     view.className = 'tile-image';
     view.setAttribute('aria-label', 'Ampliar imagen');
     const image = new Image();
-    image.alt = prompt;
-    image.loading = 'lazy';
-    image.src = url;
+    image.alt = item.prompt;
+    image.src = item.src;
     view.append(image);
-    view.addEventListener('click', () => open(url, prompt));
+    view.addEventListener('click', () => open(item));
 
-    const save = document.createElement('a');
-    save.className = 'tile-save icon-btn px';
-    save.href = url;
-    save.download = fileName(url);
-    save.setAttribute('aria-label', 'Descargar');
-    save.append(icon('download'));
+    const save = action('a', 'save', 'Descargar', 'download');
+    save.href = item.src;
+    save.download = fileName(item.id);
+
+    const remove = action('button', 'remove', 'Borrar', 'close');
+    remove.type = 'button';
+    remove.addEventListener('click', () => {
+      library.remove(item.id).catch(() => {});
+      tile.remove();
+      refreshEmpty();
+      onEvent('remove');
+    });
 
     tile.classList.remove('is-loading');
-    tile.replaceChildren(view, save);
+    tile.replaceChildren(view, save, remove);
+    refreshEmpty();
   }
 
   function fail(tile, reason) {
     tile.classList.remove('is-loading');
     tile.classList.add('is-failed');
     tile.textContent = reason;
+    refreshEmpty();
   }
 
-  function paint(tiles, job, shown) {
-    job.images.slice(shown).forEach((image, offset) => reveal(tiles[shown + offset], image, job.prompt));
+  function paint(tiles, job, shown, skip) {
+    job.images.slice(shown).forEach(({ url }, offset) => {
+      const item = { id: idOf(url), src: url, prompt: job.prompt, aspect: job.aspect };
+      reveal(tiles[shown - skip + offset], item);
+      library.save({ ...item, url }).catch(() => {});
+    });
     if (FINAL.has(job.status)) {
-      tiles.slice(job.images.length).forEach((tile) => fail(tile, job.error ?? 'no se pudo generar'));
+      tiles.slice(job.images.length - skip).forEach((tile) => fail(tile, job.error ?? 'no se pudo generar'));
     }
     return job.images.length;
   }
 
-  async function follow(job, { quiet = false } = {}) {
-    const tiles = Array.from({ length: job.n }, () => placeholder(job.aspect));
+  // `skip` son las imagenes del trabajo que ya estaban en la biblioteca al recargar.
+  async function follow(job, { quiet = false, skip = 0 } = {}) {
+    const tiles = Array.from({ length: job.n - skip }, () => placeholder(job.aspect));
     root.prepend(...tiles);
     refreshEmpty();
     tracked.add(job.id);
     remember();
 
-    let shown = paint(tiles, job, 0);
+    let shown = paint(tiles, job, skip, skip);
     while (!FINAL.has(job.status)) {
       await sleep(POLL_MS);
       try {
@@ -88,26 +113,43 @@ export function createGallery({ root, empty, lightbox, onEvent }) {
         job = { ...job, status: 'failed', error: 'la generacion expiro' };
       }
       const before = shown;
-      shown = paint(tiles, job, shown);
+      shown = paint(tiles, job, shown, skip);
       if (shown > before && !FINAL.has(job.status)) onEvent('image', job);
     }
+    tracked.delete(job.id);
+    remember();
     if (!quiet) onEvent(job.images.length ? 'done' : 'failed', job);
     return job;
   }
 
   async function restore() {
+    const saved = await library.all().catch(() => []);
+    for (const { id, blob, prompt, aspect } of saved) {
+      const tile = placeholder(aspect);
+      root.prepend(tile);
+      reveal(tile, { id, src: URL.createObjectURL(blob), prompt, aspect });
+    }
+    refreshEmpty();
+
+    const known = new Set(saved.map(({ id }) => id));
     for (const id of [...tracked]) {
+      tracked.delete(id);
       try {
         const job = await api.job(id);
-        if (job.images.length || !FINAL.has(job.status)) follow(job, { quiet: true });
-        else tracked.delete(id);
-      } catch {
-        tracked.delete(id);
-      }
+        const skip = job.images.filter(({ url }) => known.has(idOf(url))).length;
+        if (job.n > skip) follow(job, { quiet: true, skip });
+      } catch {}
     }
     remember();
   }
 
+  function clear() {
+    library.clear().catch(() => {});
+    root.querySelectorAll('.tile:not(.is-loading)').forEach((tile) => tile.remove());
+    refreshEmpty();
+    onEvent('remove');
+  }
+
   refreshEmpty();
-  return { follow, restore };
+  return { follow, restore, clear };
 }

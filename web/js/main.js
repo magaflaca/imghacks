@@ -64,13 +64,29 @@ const settle = (mood, line, tune) => {
 const gallery = createGallery({
   root: $('gallery'),
   empty: $('empty'),
+  clearButton: $('clear'),
   lightbox: $('lightbox'),
   onEvent(kind, job) {
     if (kind === 'open') return sound.play('tap');
+    if (kind === 'remove') return sound.play('off');
     if (kind === 'image') return sound.play('image');
     if (kind === 'done') return settle('happy', job.error ? 'listo, aunque alguna no salio.' : 'listo. que te parece', 'done');
     if (kind === 'failed') return settle('sad', job.error ?? 'no salio. prueba otra vez.', 'error');
   },
+});
+
+const CONFIRM_MS = 3500;
+let confirming;
+$('clear').addEventListener('click', ({ currentTarget: button }) => {
+  clearTimeout(confirming);
+  const armed = button.classList.toggle('is-armed');
+  button.textContent = armed ? 'seguro? pulsa otra vez' : 'borrar todas';
+  if (!armed) return gallery.clear();
+  sound.play('tap');
+  confirming = setTimeout(() => {
+    button.classList.remove('is-armed');
+    button.textContent = 'borrar todas';
+  }, CONFIRM_MS);
 });
 
 const FEEDBACK = {

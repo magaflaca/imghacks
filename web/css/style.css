@@ -565,10 +565,25 @@ main {
 .results-head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 4px 16px;
+  gap: 8px 16px;
   margin-bottom: 18px;
+}
+
+.results-head .hint {
+  flex-basis: 100%;
+}
+
+#clear {
+  font-size: 15px;
+  padding: 5px 12px;
+  --shadow: transparent;
+}
+
+#clear.is-armed {
+  background: var(--danger);
+  color: var(--on-accent);
 }
 
 h2 {
@@ -636,7 +651,7 @@ h2 {
   }
 }
 
-.tile-save {
+.tile-action {
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -648,15 +663,24 @@ h2 {
   --shadow: transparent;
 }
 
-.tile:hover .tile-save,
-.tile-save:focus-visible {
+.tile:hover .tile-action,
+.tile-action:focus-visible {
   opacity: 1;
 }
 
 @media (hover: none) {
-  .tile-save {
+  .tile-action {
     opacity: 1;
   }
+}
+
+.tile-remove {
+  top: 8px;
+  bottom: auto;
+}
+
+.tile-remove:hover {
+  background: var(--danger);
 }
 
 .tile.is-loading {

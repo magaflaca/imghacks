@@ -1001,7 +1001,7 @@ dialog[open] {
   }
 
   .gallery {
-    --tile: 230px;
+    --tile: 190px;
   }
 
   .empty {
@@ -1015,10 +1015,28 @@ dialog[open] {
   }
 }
 
-@media (min-width: 1080px) and (min-height: 860px) {
+@media (min-width: 1080px) {
+  /* El compositor acompana al scroll de la galeria y, si la pantalla es baja, se desplaza por dentro.
+     El relleno deja sitio a la mascota y al borde pixelado, que el overflow recortaria. */
   .side {
     position: sticky;
-    top: 58px;
+    top: 0;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: -64px -8px 0;
+    padding: 64px 8px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-soft) transparent;
+  }
+
+  .side::-webkit-scrollbar {
+    width: 9px;
+  }
+
+  .side::-webkit-scrollbar-thumb {
+    background: var(--ink-soft);
+    border: 3px solid var(--bg);
   }
 }
 

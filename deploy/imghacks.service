@@ -1,0 +1,22 @@
+[Unit]
+Description=imghacks (API y web de generacion de imagenes)
+After=network-online.target escritorio-virtual.service
+Wants=network-online.target escritorio-virtual.service
+
+[Service]
+User=gflow
+Group=gflow
+WorkingDirectory=/opt/imghacks/app
+EnvironmentFile=/opt/imghacks/env
+Environment=HOME=/home/gflow DISPLAY=:99 XDG_RUNTIME_DIR=/tmp/gflow-run LANG=C.UTF-8
+Environment=PATH=/home/gflow/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStartPre=+/usr/bin/install -d -o gflow -g gflow -m 700 /tmp/gflow-run
+ExecStart=/opt/imghacks/runtime/bin/node src/server.js
+Restart=always
+RestartSec=2
+MemoryHigh=1500M
+MemoryMax=2G
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

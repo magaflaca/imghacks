@@ -2,17 +2,19 @@ import { theme } from './theme.js';
 
 const PIXEL = 4;
 const FRAME_MS = 160;
+const HILL_HEIGHTS = [0.2, 0.12, 0.065];
 
 const PALETTES = {
   light: {
-    sky: ['#dcebfb', '#e6e6fa', '#f3e4f3', '#fbeae6', '#fdf6ee'],
-    hills: ['#d9f0e2', '#c3e8d5'],
-    cloud: ['#ffffff', '#f1e6f2'],
-    specks: ['#f9bfd3', '#fbe9ab', '#ffffff'],
+    sky: ['#a9d3f5', '#bccdf6', '#d7c4f0', '#f3c3dc', '#fbd3c4'],
+    hills: ['#cbbdea', '#a8dcbd', '#86cba4'],
+    cloud: ['#ffffff', '#e4d9f4'],
+    specks: ['#f78fb3', '#fbe08a', '#ffffff'],
+    sun: ['#fff6cf', '#ffe9a3'],
   },
   dark: {
     sky: ['#12102a', '#181530', '#1f1a3a', '#272043', '#2e254b'],
-    hills: ['#231f40', '#191630'],
+    hills: ['#2b2550', '#231f40', '#191630'],
     stars: ['#f0e7f7', '#f3d98b', '#a898e6'],
     moon: ['#f6ecc6', '#d8cb9c'],
     specks: ['#f3d98b', '#8fd6b5'],
@@ -36,8 +38,9 @@ export function startScene(canvas) {
   let backdrop, width, height, clouds, stars, specks, tick = 0;
 
   const hillTop = (x, layer) => {
-    const base = height - Math.max(9, height * (layer ? 0.05 : 0.085));
-    return Math.round(base + Math.sin(x * 0.045 + layer * 2.1) * 2 + Math.sin(x * 0.013 + layer) * 4);
+    const base = height - Math.max(8, height * HILL_HEIGHTS[layer]);
+    const sway = layer ? 1 : 2.4;
+    return Math.round(base + Math.sin(x * 0.045 + layer * 2.1) * 2 * sway + Math.sin(x * 0.013 + layer) * 4 * sway);
   };
 
   function paintBackdrop(palette) {
@@ -55,12 +58,26 @@ export function startScene(canvas) {
       for (let x = 0; x < width; x++) paint.fillRect(x, hillTop(x, layer), 1, height);
     });
     if (palette.moon) paintMoon(paint, palette.moon);
+    if (palette.sun) paintSun(paint, palette.sun);
+  }
+
+  function paintSun(paint, [core, halo]) {
+    const cx = Math.round(width * 0.86);
+    const cy = Math.round(height * 0.2);
+    for (let y = -11; y <= 11; y++) {
+      for (let x = -11; x <= 11; x++) {
+        const distance = x * x + y * y;
+        if (distance > 121 || (distance > 49 && (x + y) % 2)) continue;
+        paint.fillStyle = distance > 49 ? halo : core;
+        paint.fillRect(cx + x, cy + y, 1, 1);
+      }
+    }
   }
 
   function paintMoon(paint, [lit, shade]) {
     const radius = 7;
-    const cx = Math.round(width * 0.14);
-    const cy = 22;
+    const cx = Math.round(width * 0.86);
+    const cy = Math.round(height * 0.2);
     for (let y = -radius; y <= radius; y++) {
       for (let x = -radius; x <= radius; x++) {
         if (x * x + y * y > radius * radius) continue;
@@ -88,7 +105,7 @@ export function startScene(canvas) {
     }));
     specks = Array.from({ length: Math.round(width / 9) }, () => {
       const x = Math.floor(next() * width);
-      return { x, y: hillTop(x, 1) + 2 + Math.floor(next() * 6), phase: Math.floor(next() * 30), tone: Math.floor(next() * 3) };
+      return { x, y: hillTop(x, 2) + 2 + Math.floor(next() * 6), phase: Math.floor(next() * 30), tone: Math.floor(next() * 3) };
     });
   }
 

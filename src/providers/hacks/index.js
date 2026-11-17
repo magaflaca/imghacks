@@ -77,6 +77,7 @@ export function createHacksProvider(settings, { profilesDir, log }) {
         description: 'Sin filtros, apto para +18. Varios estilos',
         aspects: Object.keys(RESOLUTIONS),
         maxImages: 6,
+        maxReferences: 0,
         adult: true,
         styles: Object.entries(STYLES).map(([id, { name }]) => ({ id, name })),
       },

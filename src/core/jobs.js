@@ -17,6 +17,7 @@ export class JobStore {
       owner,
       model: model.id,
       params,
+      references: params.references.length,
       status: 'queued',
       images: [],
       error: null,
@@ -52,6 +53,7 @@ export class JobStore {
     } catch (err) {
       job.error = err.message;
     }
+    job.params.references = [];
     const produced = job.images.length > 0;
     job.status = produced ? 'done' : 'failed';
     if (!produced) job.error ??= 'No se genero ninguna imagen';
@@ -72,6 +74,7 @@ export const presentJob = (job) => ({
   prompt: job.params.prompt,
   n: job.params.n,
   aspect: job.params.aspect,
+  references: job.references,
   images: job.images.map(({ url, mime, expiresAt }) => ({ url, mime, expires_at: expiresAt })),
   error: job.error,
   created_at: job.createdAt,

@@ -71,8 +71,12 @@ export function createGallery({ root, empty, clearButton, lightbox, onEvent }) {
       onEvent('remove');
     });
 
+    const edit = action('button', 'edit', 'Editar con un modelo Gemini', 'pencil');
+    edit.type = 'button';
+    edit.addEventListener('click', () => onEvent('edit', item));
+
     tile.classList.remove('is-loading');
-    tile.replaceChildren(view, save, remove);
+    tile.replaceChildren(view, save, remove, edit);
     refreshEmpty();
   }
 

@@ -19,12 +19,13 @@ export function createRegistry(config, log) {
     get: (id) => models.get(id),
     adultModel: () => [...models.values()].find((model) => model.adult),
     list: () =>
-      [...models.values()].map(({ id, name, description, aspects, maxImages, adult, styles, provider }) => ({
+      [...models.values()].map(({ id, name, description, aspects, maxImages, maxReferences, adult, styles, provider }) => ({
         id,
         name,
         description,
         aspects,
         max_images: maxImages,
+        max_references: maxReferences,
         adult,
         styles,
         queue: provider.queue.pending + provider.queue.active,

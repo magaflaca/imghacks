@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createQueue } from '../core/queue.js';
@@ -8,9 +8,9 @@ const ASPECTS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
 const IMAGE_FILE = /\.(png|jpe?g|webp)$/i;
 
 const CATALOG = [
-  { id: 'nano-banana-2.1', alias: 'nano2', name: 'Nano Banana 2.1', description: 'Gemini rapido y equilibrado' },
-  { id: 'nano-banana-pro', alias: 'nano-pro', name: 'Nano Banana Pro', description: 'Gemini de maxima calidad y texto nitido' },
-  { id: 'nano-banana-2-lite', alias: 'nano2-lite', name: 'Nano Banana 2 Lite', description: 'Gemini ligero, el mas veloz' },
+  { id: 'nano-banana-2.1', alias: 'nano2', name: 'Nano Banana 2.1', description: 'Gemini rapido y equilibrado', maxReferences: 4 },
+  { id: 'nano-banana-pro', alias: 'nano-pro', name: 'Nano Banana Pro', description: 'Gemini de maxima calidad y texto nitido', maxReferences: 4 },
+  { id: 'nano-banana-2-lite', alias: 'nano2-lite', name: 'Nano Banana 2 Lite', description: 'Gemini ligero, el mas veloz', maxReferences: 3 },
 ];
 
 const lastProblem = (output) => {
@@ -57,18 +57,28 @@ export function createFlowProvider({ bin, concurrency, timeoutMs }) {
     queue,
     models: CATALOG.map((model) => ({ ...model, aspects: ASPECTS, maxImages: 4, adult: false, styles: [] })),
 
-    generate: ({ model, prompt, n, aspect }, hooks) =>
+    generate: ({ model, prompt, n, aspect, references }, hooks) =>
       queue.run(async () => {
         hooks.onStart();
-        const outDir = await mkdtemp(path.join(os.tmpdir(), 'imghacks-flow-'));
+        const workDir = await mkdtemp(path.join(os.tmpdir(), 'imghacks-flow-'));
+        const outDir = path.join(workDir, 'out');
         try {
-          const args = ['image', 't2i', '--model', model.alias, '--aspect', aspect, '-n', String(n), '--out', outDir, '--', prompt];
+          await mkdir(outDir);
+          const refArgs = await Promise.all(
+            references.map(async ({ data, ext }, index) => {
+              const file = path.join(workDir, `ref-${index}.${ext}`);
+              await writeFile(file, data);
+              return ['--ref', file];
+            }),
+          );
+          const mode = references.length ? 'i2i' : 't2i';
+          const args = ['image', mode, ...refArgs.flat(), '--model', model.alias, '--aspect', aspect, '-n', String(n), '--out', outDir, '--', prompt];
           const { code, output } = await runCli(bin, args, timeoutMs);
           const files = (await readdir(outDir, { recursive: true })).filter((file) => IMAGE_FILE.test(file)).sort();
           for (const file of files) await hooks.onImage(await readFile(path.join(outDir, file)));
           if (!files.length) throw new Error(lastProblem(output) ?? `Flow termino sin imagenes (codigo ${code})`);
         } finally {
-          await rm(outDir, { recursive: true, force: true });
+          await rm(workDir, { recursive: true, force: true });
         }
       }),
   };

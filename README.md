@@ -59,6 +59,7 @@ Cuerpo de `POST /v1/generations`:
 | `n` | entero | 1 a 4 en Flow, 1 a 6 en hacks |
 | `aspect` | texto | `1:1`, `3:4`, `4:3`, `9:16`, `16:9` |
 | `style` | texto | solo hacks: `none`, `photo`, `90s-photo`, `80s-photo`, `anime`, `painting`, `pixel-art`, `cinematic` |
+| `images` | lista | solo Gemini: hasta 4 imagenes (3 en lite) en base64 o data URL, PNG/JPEG/WebP de 8 MB como maximo. Con ellas el modelo edita o combina segun el prompt |
 | `negative` | texto | solo hacks |
 | `nsfw` | booleano | fuerza el modelo hacks |
 

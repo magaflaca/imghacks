@@ -9,7 +9,7 @@ const FORMATS = [
 ];
 const FALLBACK = FORMATS[1];
 
-const sniff = (buffer) => FORMATS.find(({ magic }) => magic.every((byte, i) => buffer[i] === byte)) ?? FALLBACK;
+export const sniffFormat = (buffer) => FORMATS.find(({ magic }) => magic.every((byte, i) => buffer[i] === byte));
 
 export class ImageStore {
   constructor({ dir, ttlMs, publicUrl }) {
@@ -25,7 +25,7 @@ export class ImageStore {
   }
 
   async save(buffer) {
-    const { ext, mime } = sniff(buffer);
+    const { ext, mime } = sniffFormat(buffer) ?? FALLBACK;
     const name = `${randomBytes(16).toString('hex')}.${ext}`;
     await writeFile(path.join(this.dir, name), buffer);
     return { name, mime, url: `${this.publicUrl}/i/${name}`, expiresAt: Date.now() + this.ttlMs };

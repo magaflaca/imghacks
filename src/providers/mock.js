@@ -39,7 +39,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // Proveedor de desarrollo: imita latencias y fallos sin tocar servicios reales.
 export function createMockProvider() {
   const queue = createQueue(2);
-  const base = { aspects: Object.keys(SIZES), styles: [] };
+  const base = { aspects: Object.keys(SIZES), styles: [], maxReferences: 4 };
   return {
     id: 'mock',
     queue,
@@ -52,6 +52,7 @@ export function createMockProvider() {
         name: 'Hacks',
         description: 'Sin filtros, apto para +18. Varios estilos',
         maxImages: 6,
+        maxReferences: 0,
         adult: true,
         styles: [
           { id: 'none', name: 'Libre' },

@@ -16,6 +16,9 @@ const EXAMPLE = `curl -X POST ${location.origin}/v1/generations \\
   -H "Content-Type: application/json" \\
   -d '{"model":"nano-banana-pro","prompt":"un faro al atardecer","n":2,"aspect":"16:9"}'
 
+# editar o combinar imagenes con los modelos Gemini: hasta 4, en base64 o data URL
+#   "images": ["data:image/png;base64,..."]
+
 curl ${location.origin}/v1/generations/ID \\
   -H "Authorization: Bearer TU_API_KEY"`;
 
@@ -69,6 +72,7 @@ const gallery = createGallery({
   onEvent(kind, job) {
     if (kind === 'open') return sound.play('tap');
     if (kind === 'remove') return sound.play('off');
+    if (kind === 'edit') return editImage(job);
     if (kind === 'image') return sound.play('image');
     if (kind === 'done') return settle('happy', job.error ? 'listo, aunque alguna no salio.' : 'listo. que te parece', 'done');
     if (kind === 'failed') return settle('sad', job.error ?? 'no salio. prueba otra vez.', 'error');
@@ -101,6 +105,10 @@ const FEEDBACK = {
     mascot.say('modo +18: uso el modelo hacks.');
   },
   'adult-off': () => sound.play('off'),
+  reference: () => {
+    sound.play('select');
+    mascot.say('dime que hago con esa imagen.');
+  },
 };
 
 async function submit(payload) {
@@ -123,8 +131,15 @@ async function submit(payload) {
   }
 }
 
+let composer;
+async function editImage({ src }) {
+  const blob = await fetch(src).then((response) => response.blob());
+  await composer?.edit(blob);
+  document.querySelector('.composer').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 try {
-  createComposer({ models: await api.models(), onSubmit: submit, onFeedback: (kind) => FEEDBACK[kind]?.() });
+  composer = createComposer({ models: await api.models(), onSubmit: submit, onFeedback: (kind) => FEEDBACK[kind]?.() });
   gallery.restore();
   mascot.say('hola. escribe algo y lo dibujo.', 5000);
 } catch (error) {

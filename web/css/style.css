@@ -375,7 +375,7 @@ main {
 
 .options-models {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .option {
@@ -877,10 +877,6 @@ dialog[open] {
   .perch {
     right: 14px;
     max-width: calc(100% - 28px);
-  }
-
-  .options-models {
-    grid-template-columns: 1fr 1fr;
   }
 
   .options {

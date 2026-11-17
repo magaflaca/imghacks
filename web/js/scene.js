@@ -62,8 +62,8 @@ export function startScene(canvas) {
   }
 
   function paintSun(paint, [core, halo]) {
-    const cx = Math.round(width * 0.86);
-    const cy = Math.round(height * 0.2);
+    const cx = Math.round(width * 0.95);
+    const cy = Math.round(height * 0.11);
     for (let y = -11; y <= 11; y++) {
       for (let x = -11; x <= 11; x++) {
         const distance = x * x + y * y;

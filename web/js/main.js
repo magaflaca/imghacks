@@ -49,6 +49,16 @@ bindToggle($('theme-toggle'), () => (theme.current === 'dark' ? 'sun' : 'moon'),
   sound.play('select');
 });
 
+const apiDialog = $('api-dialog');
+document.querySelectorAll('[data-open-api]').forEach((button) =>
+  button.addEventListener('click', () => {
+    apiDialog.showModal();
+    sound.play('tap');
+  }),
+);
+$('api-close').addEventListener('click', () => apiDialog.close());
+apiDialog.addEventListener('click', (event) => event.target === apiDialog && apiDialog.close());
+
 $('example').textContent = EXAMPLE;
 $('copy-example').addEventListener('click', async () => {
   await navigator.clipboard.writeText(EXAMPLE);

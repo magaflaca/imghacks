@@ -686,6 +686,7 @@ h2 {
 .tile {
   margin: 0;
   height: var(--tile);
+  aspect-ratio: var(--ratio, 1);
   max-width: 100%;
   position: relative;
   background: var(--surface-2);
@@ -802,28 +803,73 @@ h2 {
   --line: var(--danger);
 }
 
-.api summary {
+.api {
+  padding: 0;
+}
+
+.api-open {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  padding: 16px 22px;
   font-weight: 700;
   font-size: 19px;
-  list-style: none;
+  text-align: left;
+  transition: background-color 0.15s steps(3);
 }
 
-.api summary::-webkit-details-marker {
-  display: none;
+.api-open:hover {
+  background: var(--surface-2);
 }
 
-.api summary [data-icon] {
+.api-open [data-icon] {
   width: 20px;
   height: 20px;
+  flex: none;
   color: var(--pink-deep);
 }
 
-.api p {
-  margin: 16px 0 20px;
+.api-open small {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--ink-soft);
+}
+
+.api-frame {
+  width: min(720px, 100vw - 32px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+
+.api-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.api-frame p {
+  margin: 14px 0 20px;
+  color: var(--ink-soft);
+}
+
+.gallery,
+.api-frame {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-soft) transparent;
+}
+
+.gallery::-webkit-scrollbar,
+.api-frame::-webkit-scrollbar {
+  width: 9px;
+}
+
+.gallery::-webkit-scrollbar-thumb,
+.api-frame::-webkit-scrollbar-thumb {
+  background: var(--ink-soft);
+  border: 3px solid var(--surface);
 }
 
 code,
@@ -984,59 +1030,69 @@ dialog[open] {
   main {
     display: grid;
     grid-template-columns: minmax(440px, 5fr) minmax(0, 6fr);
-    align-items: start;
     gap: 0 48px;
   }
 
-  .side,
+  .side {
+    display: block;
+  }
+
+  /* La columna derecha no aporta altura (contain: size): el compositor marca el alto
+     y la galeria rellena lo que queda, desplazandose por dentro. */
   .feed {
+    contain: size;
     display: flex;
     flex-direction: column;
-    gap: 44px;
+    gap: 24px;
     min-width: 0;
+  }
+
+  .results {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gallery {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    align-content: start;
+    align-items: start;
+    padding: 14px 14px 24px;
+    background: var(--surface);
+    box-shadow:
+      0 calc(var(--px) * -1) 0 0 var(--line),
+      0 var(--px) 0 0 var(--line),
+      calc(var(--px) * -1) 0 0 0 var(--line),
+      var(--px) 0 0 0 var(--line);
+  }
+
+  .results-head {
+    margin-bottom: 16px;
   }
 
   .options {
     gap: 16px 12px;
   }
 
-  .gallery {
-    --tile: 190px;
+  .gallery .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
   }
 
   .empty {
+    flex: 1;
     display: grid;
     place-items: center;
-    min-height: 340px;
   }
 
   .foot {
     padding-bottom: 90px;
-  }
-}
-
-@media (min-width: 1080px) {
-  /* El compositor acompana al scroll de la galeria y, si la pantalla es baja, se desplaza por dentro.
-     El relleno deja sitio a la mascota y al borde pixelado, que el overflow recortaria. */
-  .side {
-    position: sticky;
-    top: 0;
-    max-height: 100dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    margin: -64px -8px 0;
-    padding: 64px 8px 20px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ink-soft) transparent;
-  }
-
-  .side::-webkit-scrollbar {
-    width: 9px;
-  }
-
-  .side::-webkit-scrollbar-thumb {
-    background: var(--ink-soft);
-    border: 3px solid var(--bg);
   }
 }
 
@@ -1048,6 +1104,15 @@ dialog[open] {
   code,
   pre {
     font-size: 12px;
+  }
+
+  .api-open {
+    padding: 14px 16px;
+    font-size: 17px;
+  }
+
+  .api-open small {
+    display: none;
   }
 
   .top {

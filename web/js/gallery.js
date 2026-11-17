@@ -35,7 +35,7 @@ export function createGallery({ root, empty, clearButton, lightbox, onEvent }) {
   function placeholder(aspect) {
     const tile = document.createElement('figure');
     tile.className = 'tile px is-loading';
-    tile.style.aspectRatio = aspect.replace(':', ' / ');
+    tile.style.setProperty('--ratio', aspect.replace(':', ' / '));
     return tile;
   }
 

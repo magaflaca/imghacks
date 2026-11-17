@@ -15,6 +15,7 @@ const shuffle = (items) => {
 
 // Pool autoabastecido de listas publicas. Solo se valida que el proxy este vivo: el juez
 // real es la generacion misma, que reporta cada resultado para rotar los que fallan.
+// La conexion directa se comparte entre workers; cada proxy se presta a uno solo.
 export class ProxyPool {
   #entries = new Map();
   #leased = new Set();
@@ -47,7 +48,7 @@ export class ProxyPool {
   }
 
   acquire() {
-    const free = [...this.#entries].filter(([url]) => !this.#leased.has(url)).sort(([, a], [, b]) => a - b);
+    const free = [...this.#entries].filter(([url]) => url === DIRECT || !this.#leased.has(url)).sort(([, a], [, b]) => a - b);
     if (!free.length) return undefined;
     const [url] = free[0];
     this.#leased.add(url);

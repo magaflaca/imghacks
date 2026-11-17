@@ -10,7 +10,7 @@ import { openaiRoutes } from './routes/openai.js';
 import { apiPolicy, webPolicy } from './routes/policies.js';
 
 export async function buildApp(config) {
-  const app = Fastify({ logger: { level: 'info' }, bodyLimit: 64 * 1024 });
+  const app = Fastify({ logger: { level: 'info' }, disableRequestLogging: true, bodyLimit: 64 * 1024 });
 
   const images = new ImageStore({ dir: config.paths.images, ttlMs: config.imageTtlMs, publicUrl: config.publicUrl });
   const jobs = new JobStore({ ttlMs: config.jobTtlMs, images });

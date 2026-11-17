@@ -76,8 +76,8 @@ export function startScene(canvas) {
 
   function paintMoon(paint, [lit, shade]) {
     const radius = 7;
-    const cx = Math.round(width * 0.86);
-    const cy = Math.round(height * 0.2);
+    const cx = Math.round(width * 0.95);
+    const cy = Math.round(height * 0.11);
     for (let y = -radius; y <= radius; y++) {
       for (let x = -radius; x <= radius; x++) {
         if (x * x + y * y > radius * radius) continue;

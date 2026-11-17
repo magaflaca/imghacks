@@ -171,8 +171,14 @@ export function createComposer({ models, onSubmit, onFeedback }) {
     await addReferences(picker.files);
     picker.value = '';
   });
-  prompt.addEventListener('paste', (event) => {
-    if (event.clipboardData.files.length) addReferences(event.clipboardData.files);
+  // Ctrl+V con una imagen en el portapapeles la anade como referencia, este donde este el foco.
+  document.addEventListener('paste', (event) => {
+    const images = [...event.clipboardData.items]
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile());
+    if (!images.length) return;
+    event.preventDefault();
+    addReferences(images);
   });
   form.addEventListener('dragover', (event) => event.preventDefault());
   form.addEventListener('drop', (event) => {

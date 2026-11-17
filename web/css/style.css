@@ -370,7 +370,7 @@ main {
 .options {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 18px 14px;
 }
 
 .options-models {
@@ -758,7 +758,7 @@ code {
   width: 30px;
   height: 30px;
   padding: 8px;
-  background: transparent;
+  background: var(--bg);
 }
 
 .endpoints {
@@ -809,7 +809,9 @@ dialog[open] {
 .lightbox-frame img {
   display: block;
   max-width: min(100%, 86vw);
+  min-width: min(320px, 80vw);
   max-height: calc(100dvh - 150px);
+  object-fit: contain;
   margin: 0 auto;
   background: var(--surface-2);
 }
@@ -882,7 +884,7 @@ dialog[open] {
   }
 
   .options {
-    gap: 12px;
+    gap: 18px 12px;
   }
 
   .gallery {

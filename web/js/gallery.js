@@ -19,18 +19,54 @@ export function createGallery({ root, empty, clearButton, lightbox, onEvent }) {
     clearButton.hidden = !root.querySelector('.tile:not(.is-loading)');
   };
 
-  function open({ id, src, prompt }) {
-    frame.image.src = src;
-    frame.image.alt = prompt;
-    frame.prompt.textContent = prompt;
-    frame.save.href = src;
-    frame.save.download = fileName(id);
+  const SWIPE_PX = 50;
+  let current = null;
+
+  function show(item, direction) {
+    current = item;
+    frame.image.classList.remove('from-next', 'from-prev');
+    frame.image.src = item.src;
+    frame.image.alt = item.prompt;
+    frame.prompt.textContent = item.prompt;
+    frame.save.href = item.src;
+    frame.save.download = fileName(item.id);
+    if (!direction) return;
+    void frame.image.offsetWidth;
+    frame.image.classList.add(direction > 0 ? 'from-next' : 'from-prev');
+  }
+
+  function open(item) {
+    show(item);
     lightbox.showModal();
+    onEvent('open');
+  }
+
+  // Orden visual de la galeria: la flecha derecha avanza hacia imagenes mas antiguas.
+  function step(direction) {
+    const items = [...root.querySelectorAll('.tile')].map((tile) => tile.item).filter(Boolean);
+    const next = items[items.indexOf(current) + direction];
+    if (!next) return;
+    show(next, direction);
     onEvent('open');
   }
 
   lightbox.addEventListener('click', (event) => event.target === lightbox && lightbox.close());
   lightbox.querySelector('#lightbox-close').addEventListener('click', () => lightbox.close());
+  document.addEventListener('keydown', (event) => {
+    if (!lightbox.open) return;
+    if (event.key === 'ArrowRight') step(1);
+    if (event.key === 'ArrowLeft') step(-1);
+  });
+
+  let swipeStart = null;
+  lightbox.addEventListener('pointerdown', ({ clientX, clientY }) => (swipeStart = { x: clientX, y: clientY }));
+  lightbox.addEventListener('pointerup', ({ clientX, clientY }) => {
+    if (!swipeStart) return;
+    const dx = clientX - swipeStart.x;
+    const dy = clientY - swipeStart.y;
+    swipeStart = null;
+    if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
+  });
 
   function placeholder(aspect) {
     const tile = document.createElement('figure');
@@ -75,6 +111,7 @@ export function createGallery({ root, empty, clearButton, lightbox, onEvent }) {
     edit.type = 'button';
     edit.addEventListener('click', () => onEvent('edit', item));
 
+    tile.item = item;
     tile.classList.remove('is-loading');
     tile.replaceChildren(view, save, remove, edit);
     refreshEmpty();

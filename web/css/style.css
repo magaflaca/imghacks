@@ -766,7 +766,6 @@ h2 {
   background-size: 12px 12px;
   background-position: 0 0, 6px 6px;
   animation: pop 0.25s steps(4) both, weave 1.2s steps(6) infinite;
-  overflow: hidden;
 }
 
 .tile.is-loading::after {
@@ -799,7 +798,7 @@ h2 {
   font-size: 14px;
   line-height: 1.3;
   text-align: center;
-  overflow: hidden;
+  overflow-wrap: anywhere;
   --line: var(--danger);
 }
 
@@ -970,14 +969,43 @@ dialog[open] {
   padding: 10px;
 }
 
+.lightbox-frame {
+  touch-action: pan-y;
+  overflow: hidden;
+}
+
 .lightbox-frame img {
   display: block;
+  user-select: none;
+  -webkit-user-drag: none;
   max-width: min(100%, 86vw);
   min-width: min(320px, 80vw);
   max-height: calc(100dvh - 150px);
   object-fit: contain;
   margin: 0 auto;
   background: var(--surface-2);
+}
+
+.lightbox-frame img.from-next {
+  animation: slide-next 0.28s steps(6) both;
+}
+
+.lightbox-frame img.from-prev {
+  animation: slide-prev 0.28s steps(6) both;
+}
+
+@keyframes slide-next {
+  from {
+    opacity: 0;
+    transform: translateX(36px) scale(0.96);
+  }
+}
+
+@keyframes slide-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-36px) scale(0.96);
+  }
 }
 
 .lightbox-bar {

@@ -8,6 +8,7 @@ User=gflow
 Group=gflow
 WorkingDirectory=/opt/imghacks/app
 EnvironmentFile=/opt/imghacks/env
+Environment=WEB_DIR=dist/web
 Environment=HOME=/home/gflow DISPLAY=:99 XDG_RUNTIME_DIR=/tmp/gflow-run LANG=C.UTF-8
 Environment=PATH=/home/gflow/.local/bin:/usr/local/bin:/usr/bin:/bin
 ExecStartPre=+/usr/bin/install -d -o gflow -g gflow -m 700 /tmp/gflow-run

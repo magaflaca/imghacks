@@ -9,6 +9,8 @@ import { generationRoutes } from './routes/generations.js';
 import { openaiRoutes } from './routes/openai.js';
 import { apiPolicy, webPolicy } from './routes/policies.js';
 
+const HASHED_ASSET = /[\\/]assets[\\/][^\\/]+-[A-Z0-9]{8}\.(js|css)$/;
+
 export async function buildApp(config) {
   const app = Fastify({ logger: { level: 'info' }, disableRequestLogging: true, bodyLimit: 48 * 1024 * 1024 });
 
@@ -45,7 +47,14 @@ export async function buildApp(config) {
     maxAge: config.imageTtlMs,
     immutable: true,
   });
-  app.register(fastifyStatic, { root: config.paths.web, prefix: '/', decorateReply: false });
+  app.register(fastifyStatic, {
+    root: config.paths.web,
+    prefix: '/',
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res, file) =>
+      res.setHeader('cache-control', HASHED_ASSET.test(file) ? 'public, max-age=31536000, immutable' : 'no-cache'),
+  });
 
   return app;
 }

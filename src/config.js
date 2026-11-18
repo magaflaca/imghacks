@@ -7,6 +7,7 @@ const list = (key, fallback) => (env[key] ?? fallback).split(',').map((s) => s.t
 const minutes = (n) => n * 60_000;
 
 const dataDir = path.resolve(env.DATA_DIR ?? './data');
+const projectDir = path.resolve(import.meta.dirname, '..');
 
 export const config = {
   port: num('PORT', 8796),
@@ -19,7 +20,7 @@ export const config = {
     images: path.join(dataDir, 'images'),
     profiles: path.join(dataDir, 'profiles'),
     keys: path.join(dataDir, 'keys.json'),
-    web: path.resolve(import.meta.dirname, '../web'),
+    web: path.resolve(projectDir, env.WEB_DIR ?? 'web'),
   },
 
   imageTtlMs: minutes(num('IMAGE_TTL_MIN', 30)),

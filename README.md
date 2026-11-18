@@ -88,6 +88,9 @@ npm install
 PROVIDERS=mock PUBLIC_URL=http://localhost:8796 npm run dev
 ```
 
+En desarrollo se sirve `web/` tal cual. `npm run build` genera `dist/web/` con un solo JS y un solo CSS
+minificados y con huella en el nombre; produccion lo sirve (`WEB_DIR=dist/web`) con cache inmutable.
+
 El proveedor `mock` devuelve imagenes de prueba con latencia simulada, sin tocar Flow ni Perchance.
 
 ## Despliegue
